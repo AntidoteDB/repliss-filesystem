@@ -1,10 +1,10 @@
 package crdtver.language.crdts
 
+import crdtver.language.InputAst.{Identifier, NoSource}
 import crdtver.language.{TypedAst, crdts}
-import crdtver.language.TypedAst.TypeVarUse
+import crdtver.language.TypedAst.{FunctionKind, InExpr, TypeVarUse}
 import crdtver.language.TypedAstHelper._
 import crdtver.language.crdts.ACrdtInstance.{QueryStructure, printTypes}
-import crdtver.language.TypedAst.InExpr
 
 
 class MVRegisterCrdt extends CrdtTypeDefinition {
@@ -138,59 +138,70 @@ class MVRegisterCrdt extends CrdtTypeDefinition {
 
     def _upperBoundedBy(val1: InExpr, val2: InExpr): InExpr = (
       (
-          val1 === makeOperation("R") &&
-          (val2 === makeOperation("RW") || val2 === makeOperation("RX") || val2 === makeOperation("RWX"))
+          val1 === mkDatatypeCase("R") &&
+          (val2 === mkDatatypeCase("RW") || val2 === mkDatatypeCase("RX") || val2 === mkDatatypeCase("RWX"))
       ) ||
       (
-          val1 === makeOperation("W") &&
-          (val2 === makeOperation("RW") || val2 === makeOperation("WX") || val2 === makeOperation("RWX"))
+          val1 === mkDatatypeCase("W") &&
+          (val2 === mkDatatypeCase("RW") || val2 === mkDatatypeCase("WX") || val2 === mkDatatypeCase("RWX"))
       ) ||
       (
-          val1 === makeOperation("X") &&
-          (val2 === makeOperation("RX") || val2 === makeOperation("WX") || val2 === makeOperation("RWX"))
+          val1 === mkDatatypeCase("X") &&
+          (val2 === mkDatatypeCase("RX") || val2 === mkDatatypeCase("WX") || val2 === mkDatatypeCase("RWX"))
       ) ||
       (
-          val1 === makeOperation("RW") &&
-          (val2 === makeOperation("RWX"))
+          val1 === mkDatatypeCase("RW") &&
+          (val2 === mkDatatypeCase("RWX"))
       ) ||
       (
-          val1 === makeOperation("RX") &&
-          (val2 === makeOperation("RWX"))
+          val1 === mkDatatypeCase("RX") &&
+          (val2 === mkDatatypeCase("RWX"))
       ) ||
       (
-          val1 === makeOperation("WX") &&
-          (val2 === makeOperation("RWX"))
+          val1 === mkDatatypeCase("WX") &&
+          (val2 === mkDatatypeCase("RWX"))
       )
     )
 
+    /** datatype constructor of type T (type of elements in the register) */
+    private def mkDatatypeCase(name: String, args: TypedAst.InExpr*): TypedAst.FunctionCall =
+      TypedAst.FunctionCall(
+            source = NoSource(),
+            typ = T,
+            functionName = Identifier(NoSource(), name),
+            typeArgs = List(),
+            args = args.toList,
+            kind = FunctionKind.FunctionKindDatatypeConstructor()
+          )
+
     def _upperBoundedByOrEq(val1: InExpr, val2: InExpr): InExpr = (
       (
-          val1 === makeOperation("R") &&
-          (val2 === makeOperation("R") || val2 === makeOperation("RW") || val2 === makeOperation("RX") || val2 === makeOperation("RWX"))
+          val1 === mkDatatypeCase("R") &&
+          (val2 === mkDatatypeCase("R") || val2 === mkDatatypeCase("RW") || val2 === mkDatatypeCase("RX") || val2 === mkDatatypeCase("RWX"))
       ) ||
       (
-          val1 === makeOperation("W") &&
-          (val2 === makeOperation("W") || val2 === makeOperation("RW") || val2 === makeOperation("WX") || val2 === makeOperation("RWX"))
+          val1 === mkDatatypeCase("W") &&
+          (val2 === mkDatatypeCase("W") || val2 === mkDatatypeCase("RW") || val2 === mkDatatypeCase("WX") || val2 === mkDatatypeCase("RWX"))
       ) ||
       (
-          val1 === makeOperation("X") &&
-          (val2 === makeOperation("X") || val2 === makeOperation("RX") || val2 === makeOperation("WX") || val2 === makeOperation("RWX"))
+          val1 === mkDatatypeCase("X") &&
+          (val2 === mkDatatypeCase("X") || val2 === mkDatatypeCase("RX") || val2 === mkDatatypeCase("WX") || val2 === mkDatatypeCase("RWX"))
       ) ||
       (
-          val1 === makeOperation("RW") &&
-          (val2 === makeOperation("RW") || val2 === makeOperation("RWX"))
+          val1 === mkDatatypeCase("RW") &&
+          (val2 === mkDatatypeCase("RW") || val2 === mkDatatypeCase("RWX"))
       ) ||
       (
-          val1 === makeOperation("RX") &&
-          (val2 === makeOperation("RX") || val2 === makeOperation("RWX"))
+          val1 === mkDatatypeCase("RX") &&
+          (val2 === mkDatatypeCase("RX") || val2 === mkDatatypeCase("RWX"))
       ) ||
       (
-          val1 === makeOperation("WX") &&
-          (val2 === makeOperation("WX") || val2 === makeOperation("RWX"))
+          val1 === mkDatatypeCase("WX") &&
+          (val2 === mkDatatypeCase("WX") || val2 === mkDatatypeCase("RWX"))
       ) ||
       (
-          val1 === makeOperation("RWX") &&
-          val2 === makeOperation("RWX")
+          val1 === mkDatatypeCase("RWX") &&
+          val2 === mkDatatypeCase("RWX")
       )
     )
   }
