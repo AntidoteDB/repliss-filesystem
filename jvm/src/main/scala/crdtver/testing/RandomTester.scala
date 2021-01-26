@@ -205,10 +205,32 @@ class RandomTester(prog: InProgram, runArgs: RunArgs) {
     def randomValue(typ: InTypeExpr, knownIds: Map[IdType, Map[AnyValue, InvocationId]]): Option[AnyValue] = {
       typ match {
         case SimpleType(name, typeArgs) =>
-          // TODO handle datatypes
-          // TODO substitute typeArgs
-          // don't generate value '0' as this is the initial value for registers
-          Some(Interpreter.domainValue(name, 1 + rand.nextInt(domainSize - 1)))
+          def randomDomainValue = {
+            // don't generate value '0' as this is the initial value for registers
+            Some(Interpreter.domainValue(name, 1 + rand.nextInt(domainSize - 1)))
+          }
+
+          prog.findDatatype(name) match {
+            case None =>
+              randomDomainValue
+            case Some(dtU) =>
+              val dt = dtU.instantiate(typeArgs)
+              if (dt.dataTypeCases.isEmpty)
+                randomDomainValue
+              else {
+                val dtCase = pickRandom(dt.dataTypeCases)(rand)
+                val args =
+                  for (param <- dtCase.params) yield {
+                    randomValue(param.typ, knownIds) match {
+                      case Some(v) =>
+                        v
+                      case None =>
+                        return None
+                    }
+                  }
+                Some(AnyValue(DataTypeValue(dtCase.name.name, args)))
+              }
+          }
         case idt@IdType(_name) =>
           knownIds.get(idt) match {
             case Some(s) =>

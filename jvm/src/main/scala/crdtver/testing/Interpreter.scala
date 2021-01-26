@@ -858,15 +858,12 @@ case class Interpreter(val prog: InProgram, runArgs: RunArgs, val domainSize: In
         case None =>
           customTypeDomain(name)
         case Some(dt1) =>
-          // TODO substitute typeArgs
           val dt = dt1.instantiate(typeArgs)
           for (dtcase <- dt.dataTypeCases.to(LazyList); params <- enumerate(dtcase.params, state)) yield {
             val args = dtcase.params.map(p => params(LocalVar(p.name.name)))
             AnyValue(DataTypeValue(dtcase.name.name, args))
           }
       }
-    // TODO handle datatypes
-
     case idt@IdType(name) =>
       state.generatedIds.getOrElse(idt, Set()).to(LazyList)
     case CallInfoType() => ???
@@ -1298,9 +1295,13 @@ object Interpreter {
       prog.findDatatype(name) match {
         case Some(dt1) =>
           val dt = dt1.instantiate(typeArgs)
-          val dval = result.value.asInstanceOf[DataTypeValue]
-          val c = dt.dataTypeCases.find(_.name.name == dval.operationName).get
-          extractIdsList(dval.args, c.params.map(_.typ), prog)
+          result.value match {
+            case dval: DataTypeValue =>
+              val c = dt.dataTypeCases.find(_.name.name == dval.operationName).get
+              extractIdsList(dval.args, c.params.map(_.typ), prog)
+            case other =>
+              throw new Exception(s"Cannot extract ids from ${other} (${other.getClass})")
+          }
         case None =>
           Map()
       }
