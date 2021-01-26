@@ -4,6 +4,8 @@ import crdtver.language.{TypedAst, crdts}
 import crdtver.language.TypedAst.TypeVarUse
 import crdtver.language.TypedAstHelper._
 import crdtver.language.crdts.ACrdtInstance.{QueryStructure, printTypes}
+import crdtver.language.TypedAst.InExpr
+
 
 class MVRegisterCrdt extends CrdtTypeDefinition {
 
@@ -66,27 +68,58 @@ class MVRegisterCrdt extends CrdtTypeDefinition {
       }),
       queryDeclEnsures(ReadPermsUpper, List(), T, {
         val result = varUse("result", T)
+        val result2 = varUse("result2", T)
         val upperBound = varUse("result", T)
         val someValue = varUse("someValue", T)
+        val someValue2 = varUse("someValue2", T)
         val someAssign = varUse("someAssign", T)
+        val someAssign2 = varUse("someAssign", T)
 
 
         val relevantCall = varUse("relevantCall")
+        val relevantCall2 = varUse("relevantCall2")
         val otherCall = varUse("otherCall")
+        val otherCall2 = varUse("otherCall2")
+
+        // forall(relevantCall, forall(someAssign,
+        //     (   relevantCall.isVis
+        //         && relevantCall.op === makeOp(Assign, someAssign)
+        //         && not(exists(otherCall, exists(someValue, otherCall.isVis && relevantCall < otherCall && otherCall.op === makeOp(Assign, someValue))))
+        //         // all uninterrupted Assigns to the register
+        //     ) -->
+        //     (
+        //         (_upperBoundedByOrEq(someAssign, result)) && // upper bound
+        //         forall(upperBound,
+        //             (_upperBoundedBy(someAssign, upperBound)) -->
+        //             (_upperBoundedByOrEq(result, upperBound))
+        //         ) // lowest upper bound
+        //     )
+        // ))
 
         forall(relevantCall, forall(someAssign,
-                (   relevantCall.isVis 
-                    && relevantCall.op === makeOp(Assign, someAssign)
-                    && not(exists(otherCall, exists(someValue, otherCall.isVis && relevantCall < otherCall && otherCall.op === makeOp(Assign, someValue))))
-                    // all uninterrupted Assigns to the register
-                ) -->
+            (   relevantCall.isVis
+                && relevantCall.op === makeOp(Assign, someAssign)
+                && not(exists(otherCall, exists(someValue, otherCall.isVis && relevantCall < otherCall && otherCall.op === makeOp(Assign, someValue))))
+                // all uninterrupted Assigns to the register
+            ) -->
+            (
+                (_upperBoundedByOrEq(someAssign, result)) && // upper bound 
                 (
-                    (upperBoundedBy(someAssign, result) || someAssign === result) && // upper bound
-                    forall(upperBound,
-                        (upperBoundedBy(someAssign, upperBound)) -->
-                        (upperBoundedBy(result, upperBound) || result === upperBound)
-                    ) // lowest upper bound
+                    forall(result2, forall(relevantCall2, forall(someAssign2,
+                        (
+                            relevantCall2.isVis
+                            && relevantCall2.op === makeOp(Assign, someAssign2)
+                            && not(exists(otherCall2, exists(someValue2, otherCall2.isVis && relevantCall2 < otherCall2 && otherCall2.op === makeOp(Assign, someValue2))))
+                        ) -->
+                        (
+                            _upperBoundedByOrEq(someValue2, result2)
+                        )
+                    ))) -->
+                    (
+                        _upperBoundedBy(result, result2)
+                    )
                 )
+            )
         ))
       }),
       {
@@ -102,6 +135,64 @@ class MVRegisterCrdt extends CrdtTypeDefinition {
     )
 
     override def additionalDataTypesRec: List[TypedAst.InTypeDecl] = MVRegisterCrdt.this.additionalDataTypes
+
+    def _upperBoundedBy(val1: InExpr, val2: InExpr): InExpr = (
+      (
+          val1 === makeOperation("R") &&
+          (val2 === makeOperation("RW") || val2 === makeOperation("RX") || val2 === makeOperation("RWX"))
+      ) ||
+      (
+          val1 === makeOperation("W") &&
+          (val2 === makeOperation("RW") || val2 === makeOperation("WX") || val2 === makeOperation("RWX"))
+      ) ||
+      (
+          val1 === makeOperation("X") &&
+          (val2 === makeOperation("RX") || val2 === makeOperation("WX") || val2 === makeOperation("RWX"))
+      ) ||
+      (
+          val1 === makeOperation("RW") &&
+          (val2 === makeOperation("RWX"))
+      ) ||
+      (
+          val1 === makeOperation("RX") &&
+          (val2 === makeOperation("RWX"))
+      ) ||
+      (
+          val1 === makeOperation("WX") &&
+          (val2 === makeOperation("RWX"))
+      )
+    )
+
+    def _upperBoundedByOrEq(val1: InExpr, val2: InExpr): InExpr = (
+      (
+          val1 === makeOperation("R") &&
+          (val2 === makeOperation("R") || val2 === makeOperation("RW") || val2 === makeOperation("RX") || val2 === makeOperation("RWX"))
+      ) ||
+      (
+          val1 === makeOperation("W") &&
+          (val2 === makeOperation("W") || val2 === makeOperation("RW") || val2 === makeOperation("WX") || val2 === makeOperation("RWX"))
+      ) ||
+      (
+          val1 === makeOperation("X") &&
+          (val2 === makeOperation("X") || val2 === makeOperation("RX") || val2 === makeOperation("WX") || val2 === makeOperation("RWX"))
+      ) ||
+      (
+          val1 === makeOperation("RW") &&
+          (val2 === makeOperation("RW") || val2 === makeOperation("RWX"))
+      ) ||
+      (
+          val1 === makeOperation("RX") &&
+          (val2 === makeOperation("RX") || val2 === makeOperation("RWX"))
+      ) ||
+      (
+          val1 === makeOperation("WX") &&
+          (val2 === makeOperation("WX") || val2 === makeOperation("RWX"))
+      ) ||
+      (
+          val1 === makeOperation("RWX") &&
+          val2 === makeOperation("RWX")
+      )
+    )
   }
 
   /** name of the CRDT */
