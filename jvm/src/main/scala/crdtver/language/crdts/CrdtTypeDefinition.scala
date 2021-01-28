@@ -83,6 +83,7 @@ object CrdtTypeDefinition {
     new RegisterCrdt,
     new MVRegisterCrdt,
     new FileAccessRightsCrdt,
+    new AFileAccessRightsCrdt,
     new CounterCrdt
   )
 
