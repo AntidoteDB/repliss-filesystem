@@ -25,7 +25,7 @@ class MVRegisterCrdt extends CrdtTypeDefinition {
 
   private val ReadPermsUpper = "ReadPermsUpper"
 
-  private val ReadPermsLower = "ReadPermsLower                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      "
+  private val ReadPermsLower = "ReadPermsLower"
 
   private val MvContains = "MvContains"
 

@@ -295,6 +295,17 @@ object TypedAstHelper {
     )
   }
 
+  /** datatype constructor of type T (type of elements in the register) */
+  def mkDatatypeCase(name: String, dtype: TypedAst.InTypeExpr, args: TypedAst.InExpr*): TypedAst.FunctionCall =
+    TypedAst.FunctionCall(
+        source = NoSource(),
+        typ = dtype,
+        functionName = Identifier(NoSource(), name),
+        typeArgs = List(),
+        args = args.toList,
+        kind = FunctionKind.FunctionKindDatatypeConstructor()
+        )
+
   //  def makeOperation(name: String, operationType: InTypeExpr, tArgs: List[InTypeExpr], exp: TypedAst.InExpr*): TypedAst.FunctionCall =
   //    makeOperationL(name, operationType, tArgs, exp.toList)
 

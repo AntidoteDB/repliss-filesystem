@@ -82,6 +82,7 @@ object CrdtTypeDefinition {
     new MapCrdt(DW(), MapCrdt.DeleteAffectsPriorAndConcurrent(), "Map_dw"),
     new RegisterCrdt,
     new MVRegisterCrdt,
+    new FileAccessRightsCrdt,
     new CounterCrdt
   )
 
