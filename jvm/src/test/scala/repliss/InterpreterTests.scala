@@ -89,9 +89,9 @@ class InterpreterTests extends AnyFunSuite with Matchers {
 //   }
 
 
-  test("file_system") {
+  test("file_system_fail1") {
 
-    val prog = Repliss.parseAndTypecheck("fs", Helper.getResource("/examples/buggy/fs.rpls")).get()
+    val prog = Repliss.parseAndTypecheck("fs", Helper.getResource("/examples/buggy/5.rpls")).get()
     val i = new Interpreter(prog, RunArgs(), domainSize = 3)
     var s = Interpreter.State()
 
@@ -147,17 +147,10 @@ class InterpreterTests extends AnyFunSuite with Matchers {
     s = i.executeAction(s, LocalAction(assignToGroupInvocId, StartTransaction(assignToGroupTransactionId, Set(createUserTrasnactionId, createAdminTrasnactionId)))).get
     s = i.executeAction(s, LocalAction(assignToGroupInvocId, Return())).get
     println(s"user assigned to group");
-    
-
-    println(s"knownIds = ${s.knownIds}")
-
-    for (k <- s.knownIds.values; kk <- k.keys) {
-      println(s"Id = $kk (${kk.value.getClass})")
-    }
 
     // create file
     s = i.executeAction(s, CallAction(createFileInvocId, "createFile", List(user1, group1))).get
-    s = i.executeAction(s, LocalAction(createFileInvocId, StartTransaction(createFileTrasnactionId, Set(createAdminTrasnactionId, assignToGroupTransactionId)))).get
+    s = i.executeAction(s, LocalAction(createFileInvocId, StartTransaction(createFileTrasnactionId, Set(assignToGroupTransactionId)))).get
     s = i.executeAction(s, LocalAction(createFileInvocId, NewId(1))).get
     s = i.executeAction(s, LocalAction(createFileInvocId, Return())).get
     println(s"file created");
@@ -208,6 +201,203 @@ class InterpreterTests extends AnyFunSuite with Matchers {
         println(iv)
         for (info <- iv.info)
           println(info)
+    }
+
+  }
+
+    test("file_system_pass1") {
+
+    val prog = Repliss.parseAndTypecheck("fs", Helper.getResource("/examples/buggy/5.rpls")).get()
+    val i = new Interpreter(prog, RunArgs(), domainSize = 3)
+    var s = Interpreter.State()
+
+    val createAdminInvocId = InvocationId(1);
+    val createUserInvocId = InvocationId(2);
+    val createGroupInvocId = InvocationId(3);
+    val assignToGroupInvocId = InvocationId(4);
+    val createFileInvocId = InvocationId(5);
+    val changeOwnerInvocId = InvocationId(6);
+    val changeOwnerPermsInvocId = InvocationId(7);
+    val changeOwnerPermsInvocId2 = InvocationId(8);
+    val readFileInvocId = InvocationId(9);
+    
+
+    val createAdminTrasnactionId = TransactionId(1);
+    val createUserTrasnactionId = TransactionId(2);
+    val createGroupTransactionId = TransactionId(3);
+    val assignToGroupTransactionId = TransactionId(4);
+    val createFileTrasnactionId = TransactionId(5);
+    val changeOwnerTrasnactionId = TransactionId(6);
+    val changeOwnerPermsTrasnactionId = TransactionId(7);
+    val changeOwnerPermsTrasnactionId2 = TransactionId(8);
+    val readFileTrasnactionId = TransactionId(9);
+    
+
+    val admin1 = domainValue("UserId", 1);
+    val user1 = domainValue("UserId", 2);
+    val file1 = domainValue("NodeId", 1);
+    val group1 = domainValue("GroupId", 1); 
+    val writeAccessRight = AnyValue(DataTypeValue("UW", List()));
+    val readWriteAccessRight = AnyValue(DataTypeValue("URW", List()));
+
+    // create admin
+    s = i.executeAction(s, CallAction(createAdminInvocId, "createUser", List(AnyValue(true)))).get // create admin
+    s = i.executeAction(s, LocalAction(createAdminInvocId, StartTransaction(createAdminTrasnactionId, Set()))).get
+    s = i.executeAction(s, LocalAction(createAdminInvocId, NewId(1))).get
+    s = i.executeAction(s, LocalAction(createAdminInvocId, Return())).get
+    println(s"admin created");
+    
+    // create user
+    s = i.executeAction(s, CallAction(createUserInvocId, "createUser", List(AnyValue(false)))).get // create admin
+    s = i.executeAction(s, LocalAction(createUserInvocId, StartTransaction(createUserTrasnactionId, Set()))).get
+    s = i.executeAction(s, LocalAction(createUserInvocId, NewId(2))).get
+    s = i.executeAction(s, LocalAction(createUserInvocId, Return())).get
+    println(s"user created");
+    
+    // create group
+    s = i.executeAction(s, CallAction(createGroupInvocId, "createGroup", List())).get // create admin
+    s = i.executeAction(s, LocalAction(createGroupInvocId, StartTransaction(createGroupTransactionId, Set()))).get
+    s = i.executeAction(s, LocalAction(createGroupInvocId, NewId(1))).get
+    s = i.executeAction(s, LocalAction(createGroupInvocId, Return())).get
+    println("Group created")
+
+    // assign user to group
+    s = i.executeAction(s, CallAction(assignToGroupInvocId, "assignUserToGroup", List(admin1, group1, user1))).get
+    s = i.executeAction(s, LocalAction(assignToGroupInvocId, StartTransaction(assignToGroupTransactionId, Set(createUserTrasnactionId, createAdminTrasnactionId)))).get
+    s = i.executeAction(s, LocalAction(assignToGroupInvocId, Return())).get
+    println(s"user assigned to group");
+
+    // create file
+    s = i.executeAction(s, CallAction(createFileInvocId, "createFile", List(user1, group1))).get
+    s = i.executeAction(s, LocalAction(createFileInvocId, StartTransaction(createFileTrasnactionId, Set(assignToGroupTransactionId)))).get
+    s = i.executeAction(s, LocalAction(createFileInvocId, NewId(1))).get
+    s = i.executeAction(s, LocalAction(createFileInvocId, Return())).get
+    println(s"file created");
+
+    // change owner of file
+    s = i.executeAction(s, CallAction(changeOwnerInvocId, "changeOwner", List(admin1, admin1, file1))).get
+    s = i.executeAction(s, LocalAction(changeOwnerInvocId, StartTransaction(changeOwnerTrasnactionId, Set(createFileTrasnactionId)))).get
+    s = i.executeAction(s, LocalAction(changeOwnerInvocId, Return())).get
+    println(s"owner changed");
+
+    // change owner perms
+    s = i.executeAction(s, CallAction(changeOwnerPermsInvocId, "changeOwnerPermission", List(user1,  writeAccessRight, file1))).get
+    s = i.executeAction(s, LocalAction(changeOwnerPermsInvocId, StartTransaction(changeOwnerPermsTrasnactionId, Set(createFileTrasnactionId)))).get
+    s = i.executeAction(s, LocalAction(changeOwnerPermsInvocId, Return())).get
+    println(s"owner perms changed");
+
+
+     // change owner perms
+    s = i.executeAction(s, CallAction(changeOwnerPermsInvocId2, "changeOwnerPermission", List(user1, readWriteAccessRight, file1))).get
+    s = i.executeAction(s, LocalAction(changeOwnerPermsInvocId2, StartTransaction(changeOwnerPermsTrasnactionId2, Set(changeOwnerPermsTrasnactionId)))).get
+    s = i.executeAction(s, LocalAction(changeOwnerPermsInvocId2, Return())).get
+    println(s"owner perms changed 2");
+
+    // read
+    s = i.executeAction(s, CallAction(readFileInvocId, "readFile", List(user1, file1))).get
+    s = i.executeAction(s, LocalAction(readFileInvocId, StartTransaction(readFileTrasnactionId, Set(changeOwnerTrasnactionId, changeOwnerPermsTrasnactionId2)))).get
+    s = i.executeAction(s, LocalAction(readFileInvocId, Return())).get
+    println("read")
+
+   
+    println(s"done");
+
+    try {
+      i.checkInvariants(s)
+    } catch {
+        case iv: InvariantViolationException =>
+            fail("Invariant-check should pass")
+            println(iv)
+            for (info <- iv.info)
+                println(info)
+    }
+
+  }
+
+    test("file_system_pass2") {
+
+    val prog = Repliss.parseAndTypecheck("fs", Helper.getResource("/examples/buggy/5.rpls")).get()
+    val i = new Interpreter(prog, RunArgs(), domainSize = 3)
+    var s = Interpreter.State()
+
+    val createAdminInvocId = InvocationId(1);
+    val createUserInvocId = InvocationId(2);
+    val createGroupInvocId = InvocationId(3);
+    val assignToGroupInvocId = InvocationId(4);
+    val createFileInvocId = InvocationId(5);
+    val changeOwnerPermsInvocId = InvocationId(6);
+    val readFileInvocId = InvocationId(7);
+    
+
+    val createAdminTrasnactionId = TransactionId(1);
+    val createUserTrasnactionId = TransactionId(2);
+    val createGroupTransactionId = TransactionId(3);
+    val assignToGroupTransactionId = TransactionId(4);
+    val createFileTrasnactionId = TransactionId(5);
+    val changeOwnerPermsTrasnactionId = TransactionId(6);
+    val readFileTrasnactionId = TransactionId(7);
+    
+
+    val admin1 = domainValue("UserId", 1);
+    val user1 = domainValue("UserId", 2);
+    val file1 = domainValue("NodeId", 1);
+    val group1 = domainValue("GroupId", 1); 
+    val writAccessRight = AnyValue(DataTypeValue("AW", List()));
+
+    // create admin
+    s = i.executeAction(s, CallAction(createAdminInvocId, "createUser", List(AnyValue(true)))).get // create admin
+    s = i.executeAction(s, LocalAction(createAdminInvocId, StartTransaction(createAdminTrasnactionId, Set()))).get
+    s = i.executeAction(s, LocalAction(createAdminInvocId, NewId(1))).get
+    s = i.executeAction(s, LocalAction(createAdminInvocId, Return())).get
+    println(s"admin created");
+    
+    // create user
+    s = i.executeAction(s, CallAction(createUserInvocId, "createUser", List(AnyValue(false)))).get // create admin
+    s = i.executeAction(s, LocalAction(createUserInvocId, StartTransaction(createUserTrasnactionId, Set()))).get
+    s = i.executeAction(s, LocalAction(createUserInvocId, NewId(2))).get
+    s = i.executeAction(s, LocalAction(createUserInvocId, Return())).get
+    println(s"user created");
+    
+    // create group
+    s = i.executeAction(s, CallAction(createGroupInvocId, "createGroup", List())).get // create admin
+    s = i.executeAction(s, LocalAction(createGroupInvocId, StartTransaction(createGroupTransactionId, Set()))).get
+    s = i.executeAction(s, LocalAction(createGroupInvocId, NewId(1))).get
+    s = i.executeAction(s, LocalAction(createGroupInvocId, Return())).get
+    println("Group created")
+
+    // assign user to group
+    s = i.executeAction(s, CallAction(assignToGroupInvocId, "assignUserToGroup", List(admin1, group1, user1))).get
+    s = i.executeAction(s, LocalAction(assignToGroupInvocId, StartTransaction(assignToGroupTransactionId, Set(createUserTrasnactionId, createAdminTrasnactionId)))).get
+    s = i.executeAction(s, LocalAction(assignToGroupInvocId, Return())).get
+    println(s"user assigned to group");
+    
+    // create file
+    s = i.executeAction(s, CallAction(createFileInvocId, "createFile", List(user1, group1))).get
+    s = i.executeAction(s, LocalAction(createFileInvocId, StartTransaction(createFileTrasnactionId, Set(assignToGroupTransactionId)))).get
+    s = i.executeAction(s, LocalAction(createFileInvocId, NewId(1))).get
+    s = i.executeAction(s, LocalAction(createFileInvocId, Return())).get
+    println(s"file created");
+
+    // change owner perms
+    s = i.executeAction(s, CallAction(changeOwnerPermsInvocId, "changeOwnerPermission", List(admin1, writAccessRight, file1))).get
+    s = i.executeAction(s, LocalAction(changeOwnerPermsInvocId, StartTransaction(changeOwnerPermsTrasnactionId, Set(createFileTrasnactionId)))).get
+    s = i.executeAction(s, LocalAction(changeOwnerPermsInvocId, Return())).get
+    println(s"owner perms changed");
+
+    // read
+    s = i.executeAction(s, CallAction(readFileInvocId, "readFile", List(user1, file1))).get
+    s = i.executeAction(s, LocalAction(readFileInvocId, StartTransaction(readFileTrasnactionId, Set(changeOwnerPermsTrasnactionId)))).get
+    s = i.executeAction(s, LocalAction(readFileInvocId, Return())).get
+    println(s"done");
+
+    try {
+      i.checkInvariants(s)
+    } catch {
+        case iv: InvariantViolationException =>
+            fail("Invariant-check should fail")
+            println(iv)
+            for (info <- iv.info)
+                println(info)
     }
 
   }
