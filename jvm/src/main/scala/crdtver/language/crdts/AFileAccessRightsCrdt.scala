@@ -148,40 +148,42 @@ class AFileAccessRightsCrdt extends CrdtTypeDefinition {
 
     override def additionalDataTypesRec: List[TypedAst.InTypeDecl] = AFileAccessRightsCrdt.this.additionalDataTypes
 
-    // TODO:
     def _upperBoundedByOrEq(val1: InExpr, val2: InExpr): InExpr = (
       (
-        val1 === mkDatatypeCase("None", T) &&
-        (val2 === mkDatatypeCase("None", T) || val2 === mkDatatypeCase("R", T) || val2 === mkDatatypeCase("W", T) || val2 === mkDatatypeCase("X", T)
-            || val2 === mkDatatypeCase("RW", T) || val2 === mkDatatypeCase("RX", T) || val2 === mkDatatypeCase("WX", T) || val2 === mkDatatypeCase("RWX", T))
+          val1 === mkDatatypeCase("ANone", T) &&
+          (val2 === mkDatatypeCase("ANone", T) || val2 === mkDatatypeCase("AR", T) || val2 === mkDatatypeCase("AW", T) || val2 === mkDatatypeCase("ARW", T))
       ) ||
       (
-          val1 === mkDatatypeCase("R", T) &&
-          (val2 === mkDatatypeCase("R", T) || val2 === mkDatatypeCase("RW", T) || val2 === mkDatatypeCase("RX", T) || val2 === mkDatatypeCase("RWX", T))
+          val1 === mkDatatypeCase("AR", T) &&
+          (val2 === mkDatatypeCase("AR", T) || val2 === mkDatatypeCase("ARW", T))
       ) ||
       (
-          val1 === mkDatatypeCase("W", T) &&
-          (val2 === mkDatatypeCase("W", T) || val2 === mkDatatypeCase("RW", T) || val2 === mkDatatypeCase("WX", T) || val2 === mkDatatypeCase("RWX", T))
+          val1 === mkDatatypeCase("AW", T) &&
+          (val2 === mkDatatypeCase("AW", T) || val2 === mkDatatypeCase("ARW", T))
       ) ||
       (
-          val1 === mkDatatypeCase("X", T) &&
-          (val2 === mkDatatypeCase("X", T) || val2 === mkDatatypeCase("RX", T) || val2 === mkDatatypeCase("WX", T) || val2 === mkDatatypeCase("RWX", T))
+          val1 === mkDatatypeCase("ARW", T) &&
+          val2 === mkDatatypeCase("ARW", T)
       ) ||
       (
-          val1 === mkDatatypeCase("RW", T) &&
-          (val2 === mkDatatypeCase("RW", T) || val2 === mkDatatypeCase("RWX", T))
+          val1 === mkDatatypeCase("UNone", T) &&
+          ( val2 === mkDatatypeCase("URW", T) || val2 === mkDatatypeCase("UR", T) || val2 === mkDatatypeCase("UW", T) || val2 === mkDatatypeCase("UNone", T)
+            || val2 === mkDatatypeCase("ARW", T) || val2 === mkDatatypeCase("AR", T) || val2 === mkDatatypeCase("AW", T) ||val2 === mkDatatypeCase("ANone", T))
       ) ||
       (
-          val1 === mkDatatypeCase("RX", T) &&
-          (val2 === mkDatatypeCase("RX", T) || val2 === mkDatatypeCase("RWX", T))
+          val1 === mkDatatypeCase("UR", T) &&
+          ( val2 === mkDatatypeCase("UR", T) || val2 === mkDatatypeCase("URW", T) || val2 === mkDatatypeCase("ARW", T) 
+          || val2 === mkDatatypeCase("AR", T) || val2 === mkDatatypeCase("AW", T) ||val2 === mkDatatypeCase("ANone", T))
       ) ||
       (
-          val1 === mkDatatypeCase("WX", T) &&
-          (val2 === mkDatatypeCase("WX", T) || val2 === mkDatatypeCase("RWX", T))
+          val1 === mkDatatypeCase("UW", T) &&
+          ( val2 === mkDatatypeCase("UW", T) || val2 === mkDatatypeCase("URW", T) || val2 === mkDatatypeCase("ARW", T) 
+          || val2 === mkDatatypeCase("AR", T) || val2 === mkDatatypeCase("AW", T) ||val2 === mkDatatypeCase("ANone", T))
       ) ||
       (
-          val1 === mkDatatypeCase("RWX", T) &&
-          val2 === mkDatatypeCase("RWX", T)
+          val1 === mkDatatypeCase("URW", T) &&
+          ( val2 === mkDatatypeCase("URW", T) || val2 === mkDatatypeCase("ARW", T) 
+          || val2 === mkDatatypeCase("AR", T) || val2 === mkDatatypeCase("AW", T) ||val2 === mkDatatypeCase("ANone", T))
       )
     )
 
