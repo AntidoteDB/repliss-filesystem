@@ -964,6 +964,7 @@ class Typer {
     val t = TypeVarUse("T")()
     bf match {
       case BF_isVisible() => p(List(CallIdType()) -> BoolType())
+      case BF_upperBoundedBy() => PrincipleType(List(t), List(t, t) -> BoolType()) // TODOO: check
       case BF_happensBefore(_) => List(
         p(List(CallIdType(), CallIdType()) -> BoolType()),
         p(List(InvocationIdType(), InvocationIdType()) -> BoolType())

@@ -276,6 +276,7 @@ object InputAst {
       function match {
         case BF_isVisible() => s"${args.head} is visible"
         case BF_happensBefore(_) => s"(${args.head} happens before ${args(1)})"
+        case BF_upperBoundedBy() => s"(${args.head} upper bounded by ${args(1)})"
         case BF_sameTransaction() => s"sameTransaction(${args(0)}, ${args(1)})"
         case BF_less() => s"(${args.head} < ${args(1)})"
         case BF_lessEq() => s"(${args.head} <= ${args(1)})"
@@ -340,6 +341,8 @@ object InputAst {
     case class BF_isVisible() extends BuiltInFunc()
 
     case class BF_happensBefore(on: HappensBeforeOn) extends BuiltInFunc()
+
+    case class BF_upperBoundedBy() extends BuiltInFunc()
 
     sealed trait HappensBeforeOn
 

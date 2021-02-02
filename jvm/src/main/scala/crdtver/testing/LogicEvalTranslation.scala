@@ -235,6 +235,9 @@ object LogicEvalTranslation {
             function match {
               case BuiltInFunc.BF_isVisible() =>
                 IsElem(argsT(0), env((e: InterpreterEnv) => e.localState.visibleCalls))
+              case BuiltInFunc.BF_upperBoundedBy() => // TODOO: hard code
+                Eq(argsT(0), argsT(1))
+                // op[(Expr[Any], Expr[Any]), Boolean](e => true, Pair(argsT(0), argsT(1)))
               case BuiltInFunc.BF_happensBefore(on) =>
                 on match {
                   case HappensBeforeOn.Unknown() => unexpected(on)

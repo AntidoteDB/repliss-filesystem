@@ -59,6 +59,17 @@ object ExprTranslation {
   def translateBuiltin(expr: ApplyBuiltin)(implicit ctxt: SymbolicContext, state: SymbolicState): SVal[_ <: SymbolicSort] = {
     val args: List[SVal[_]] = expr.args.map(translateUntyped)
     expr.function match {
+      case BF_upperBoundedBy() => // TODOO: hard code
+       val left: SVal[SymbolicSort] = castSymbolicSort(args(0))
+       val right: SVal[SymbolicSort] = castSymbolicSort(args(1))
+       // automatically adapt to option types
+       // TODO maybe adapt to option types in the frontend
+       if (left.typ == SortOption(right.typ))
+         SEq(castSymbolicSort(left), castSymbolicSort(SSome(right)))
+       else if (SortOption(left.typ) == right.typ)
+         SEq(castSymbolicSort(SSome(left)), castSymbolicSort(right))
+       else
+         SEq(left, right)
       case BF_isVisible() =>
         state.visibleCalls.contains(cast(args(0)))
       case BF_happensBefore(on) =>

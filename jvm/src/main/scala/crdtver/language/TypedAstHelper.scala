@@ -93,6 +93,15 @@ object TypedAstHelper {
     )
   }
 
+  def upperBoundedBy(exp1: InExpr, exp2: InExpr): ApplyBuiltin = {
+    ApplyBuiltin(
+      source = NoSource(),
+      typ = BoolType(),
+      function = BF_upperBoundedBy(),
+      args = List(exp1, exp2)
+    )
+  }
+
   def and(exp1: InExpr, exp2: InExpr): InExpr = (exp1, exp2) match {
     case (BoolConst(_, _, true), x) => x
     case (x@BoolConst(_, _, false), _) => x
@@ -285,6 +294,17 @@ object TypedAstHelper {
       name = c
     )
   }
+
+  /** datatype constructor of type T (type of elements in the register) */
+  def mkDatatypeCase(name: String, dtype: TypedAst.InTypeExpr, args: TypedAst.InExpr*): TypedAst.FunctionCall =
+    TypedAst.FunctionCall(
+        source = NoSource(),
+        typ = dtype,
+        functionName = Identifier(NoSource(), name),
+        typeArgs = List(),
+        args = args.toList,
+        kind = FunctionKind.FunctionKindDatatypeConstructor()
+        )
 
   //  def makeOperation(name: String, operationType: InTypeExpr, tArgs: List[InTypeExpr], exp: TypedAst.InExpr*): TypedAst.FunctionCall =
   //    makeOperationL(name, operationType, tArgs, exp.toList)

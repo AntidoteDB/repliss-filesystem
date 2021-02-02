@@ -88,6 +88,8 @@ object TypedAstPrinter {
           function match {
             case BuiltInFunc.BF_isVisible() =>
               printExpr(args(0)) <> ".isVisible"
+            case BuiltInFunc.BF_upperBoundedBy() =>
+              printOp(args(0), "upperBound", args(1))
             case BuiltInFunc.BF_happensBefore(on) =>
               printOp(args(0), "happensBefore", args(1))
             case BuiltInFunc.BF_sameTransaction() =>

@@ -10,3 +10,7 @@ act/
 jvm/src/main/resources/native
 jvm/src/main/resources/scalajs
 jvm/src/main/resources/versioninfo.properties
+.vscode/
+.metals/
+project/
+.bloop/
